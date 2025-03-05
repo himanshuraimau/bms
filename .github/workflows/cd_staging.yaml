@@ -10,6 +10,7 @@ jobs:
     steps:
       - run: |
           echo "${{ secrets.SSH_PRIVATE_KEY_DEV }}" > ~/.ssh_key_dev
+          chmod 600 ~/.ssh_key_dev
           ssh -o StrictHostKeyChecking=no -i ~/.ssh_key_dev ubuntu@52.90.189.25
           cd bms && git pull
           npm install -g pnpm pm2
