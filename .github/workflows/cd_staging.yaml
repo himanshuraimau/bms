@@ -20,10 +20,18 @@ jobs:
       - name: Deploy to staging
         run: |
           ssh -i ~/.ssh/id_rsa_dev ubuntu@52.90.189.25 '
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             cd /home/ubuntu/bms &&
             git pull &&
-            npm install -g pnpm pm2 &&
+            # Use full path if npm is not in PATH
+            if command -v npm &> /dev/null; then
+              npm install -g pnpm pm2
+            else
+              /usr/bin/npm install -g pnpm pm2 || /usr/local/bin/npm install -g pnpm pm2
+            fi &&
             pnpm install &&
             pnpm run build &&
             pm2 restart all
           '
+ 
