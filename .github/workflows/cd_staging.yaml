@@ -4,16 +4,33 @@ on:
     branches:
       - "main"
 jobs:
-  redeploy_everything:
-    name: Deploying everything to staging cluster
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY_DEV }}" > ~/.ssh_key_dev
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up SSH
+        run: |
+          echo "***" > ~/.ssh_key_dev
           chmod 600 ~/.ssh_key_dev
           ssh -o StrictHostKeyChecking=no -i ~/.ssh_key_dev ubuntu@52.90.189.25
-          cd bms && git pull
-          npm install -g pnpm pm2
-          pnpm install
-          pnpm run build
-          pm2 restart all
+
+      - name: Deploy to staging
+        run: |
+          if [ -d "bms" ]; then
+            cd bms
+            git pull
+            npm install -g pnpm pm2
+            pnpm install
+            if [ -f "package.json" ]; then
+              pnpm run build
+              pm2 restart all
+            else
+              echo "package.json not found!"
+              exit 1
+            fi
+          else
+            echo "Directory 'bms' not found!"
+            exit 1
+          fi
