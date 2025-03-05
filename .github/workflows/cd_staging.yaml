@@ -1,0 +1,21 @@
+name: Deploy to staging
+on:
+  push:
+    branches:
+      - "main"
+jobs:
+    redeploy_everything:
+        name: Deploying everything to staging cluster
+        runs-on: ubuntu-latest
+        steps:
+         - name: SSH Into the server
+           uses: appleboy/ssh-action@v1.0.0
+           with:
+                host: 98.82.12.243
+                username: ubuntu
+                key: ${{ secrets.SSH_PRIVATE_KEY_DEV }}
+                script: |
+                  cd bms && git pull
+                  pnpm install
+                  pnpm run build
+                  pm2 restart all
