@@ -14,24 +14,16 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY_DEV }}" > ~/.ssh/id_rsa_dev
-          chmod 400 ~/.ssh/id_rsa_dev  # Set correct permissions
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa_dev ubuntu@52.90.189.25
+          chmod 400 ~/.ssh/id_rsa_dev
+          ssh-keyscan -H 52.90.189.25 >> ~/.ssh/known_hosts
 
       - name: Deploy to staging
         run: |
-          if [ -d "bms" ]; then
-            cd bms
-            git pull
-            npm install -g pnpm pm2
-            pnpm install
-            if [ -f "package.json" ]; then
-              pnpm run build
-              pm2 restart all
-            else
-              echo "package.json not found!"
-              exit 1
-            fi
-          else
-            echo "Directory 'bms' not found!"
-            exit 1
-          fi
+          ssh -i ~/.ssh/id_rsa_dev ubuntu@52.90.189.25 '
+            cd /home/ubuntu/bms &&
+            git pull &&
+            npm install -g pnpm pm2 &&
+            pnpm install &&
+            pnpm run build &&
+            pm2 restart all
+          '
