@@ -16,6 +16,7 @@ jobs:
                 key: ${{ secrets.SSH_PRIVATE_KEY_DEV }}
                 script: |
                   cd bms && git pull
+                  npm install -g pnpm pm2
                   pnpm install
                   pnpm run build
                   pm2 restart all
