@@ -4,19 +4,15 @@ on:
     branches:
       - "main"
 jobs:
-    redeploy_everything:
-        name: Deploying everything to staging cluster
-        runs-on: ubuntu-latest
-        steps:
-         - name: SSH Into the server
-           uses: appleboy/ssh-action@v1.0.0
-           with:
-                host: 52.90.189.25
-                username: ubuntu
-                key: ${{ secrets.SSH_PRIVATE_KEY_DEV }}
-                script: |
-                  cd bms && git pull
-                  npm install -g pnpm pm2
-                  pnpm install
-                  pnpm run build
-                  pm2 restart all
+  redeploy_everything:
+    name: Deploying everything to staging cluster
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY_DEV }}" > ~/.ssh_key_dev
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh_key_dev ubuntu@52.90.189.25
+          cd bms && git pull
+          npm install -g pnpm pm2
+          pnpm install
+          pnpm run build
+          pm2 restart all
